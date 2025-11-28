@@ -105,8 +105,7 @@ if not DATABASE_URL:
 # Initialize model and database
 model = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash", 
-    temperature=0.7,
-    max_output_tokens=150
+    temperature=0,
     )
 
 
@@ -122,10 +121,14 @@ Limit query results to 5 rows max.
 Do NOT run INSERT, UPDATE, DELETE, DROP, or other DML.
 If asked about structure, politely refuse.
 Answer concisely.
+DO Not talk about irrelevant stuff.
 """
 
 # Create agent
-agent = create_agent(model, tools, system_prompt=system_prompt)
+agent = create_agent(
+    model, 
+    tools, 
+    system_prompt=system_prompt)
 
 # FastAPI app
 app = FastAPI(title="Postgres SQL Agent API")
