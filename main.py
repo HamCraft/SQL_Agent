@@ -153,7 +153,7 @@ async def ask_question(request: QueryRequest):
     # Simple sanitization: block questions explicitly asking for schema or table names
     forbidden_keywords = ["schema", "table", "tables", "columns", "database structure"]
     if any(word in question.lower() for word in forbidden_keywords):
-        return {"answer": "I'm sorry, I cannot provide internal database structure details."}
+        return {"answer": "Apologies, I can't provide details on that. Is there anything else I can assist you with or any other questions you have?"}
 
     final_answer = ""
     for step in agent.stream(
