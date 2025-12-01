@@ -86,6 +86,7 @@
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from langchain_deepseek import ChatDeepSeek
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -94,8 +95,16 @@ from langchain_community.utilities import SQLDatabase
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain.agents import create_agent
 
+
 # Load environment variables
 load_dotenv()
+
+model = ChatDeepSeek(
+    model="x-ai/grok-4.1-fast:free",
+    api_key="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",
+    api_base="https://openrouter.ai/api/v1",
+    extra_body={"reasoning": {"enabled": True}},
+)
 
 # Read full DATABASE_URL from .env
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -103,10 +112,12 @@ if not DATABASE_URL:
     raise Exception("Please set DATABASE_URL in your .env file")
 
 # Initialize model and database
-model = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash", 
-    temperature=0,
-    )
+# try:
+#     model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
+# except Exception as e:
+#     raise Exception(f"Failed to initialize model: {str(e)}")
+
+
 
 
 db = SQLDatabase.from_uri(DATABASE_URL)
@@ -116,6 +127,7 @@ tools = toolkit.get_tools()
 # System prompt to prevent exposing DB internals
 system_prompt = f"""
 Answer questions about the data only.
+You need prediction analyst of data when asked to 
 Do NOT reveal table names, column names, or schema.
 Limit query results to 5 rows max.
 Do NOT run INSERT, UPDATE, DELETE, DROP, or other DML.
@@ -151,7 +163,7 @@ async def ask_question(request: QueryRequest):
     question = request.question.strip()
     
     # Simple sanitization: block questions explicitly asking for schema or table names
-    forbidden_keywords = ["schema", "table", "tables", "columns", "database structure"]
+    forbidden_keywords = ["schema", "table", "tables", "columns", "database structure","base","id",]
     if any(word in question.lower() for word in forbidden_keywords):
         return {"answer": "Apologies, I can't provide details on that. Is there anything else I can assist you with or any other questions you have?"}
 
