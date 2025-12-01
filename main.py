@@ -99,15 +99,12 @@ from langchain.agents import create_agent
 # Load environment variables
 load_dotenv()
 
-
-
 model = ChatDeepSeek(
     model="x-ai/grok-4.1-fast:free",
     api_key="OPENROUTER_API_KEY",
     api_base="https://openrouter.ai/api/v1",
     extra_body={"reasoning": {"enabled": True}},
 )
-
 
 # Read full DATABASE_URL from .env
 DATABASE_URL = os.getenv("DATABASE_URL")
