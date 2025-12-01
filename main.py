@@ -101,12 +101,12 @@ load_dotenv()
 
 
 
-# model = ChatDeepSeek(
-#     model="x-ai/grok-4.1-fast:free",
-#     api_key="OPENROUTER_API_KEY",
-#     api_base="https://openrouter.ai/api/v1",
-#     extra_body={"reasoning": {"enabled": True}},
-# )
+model = ChatDeepSeek(
+    model="x-ai/grok-4.1-fast:free",
+    api_key="OPENROUTER_API_KEY",
+    api_base="https://openrouter.ai/api/v1",
+    extra_body={"reasoning": {"enabled": True}},
+)
 
 
 # Read full DATABASE_URL from .env
@@ -114,11 +114,11 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise Exception("Please set DATABASE_URL in your .env file")
 
-#Initialize model and database
-try:
-    model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
-except Exception as e:
-    raise Exception(f"Failed to initialize model: {str(e)}")
+# #Initialize model and database
+# try:
+#     model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
+# except Exception as e:
+#     raise Exception(f"Failed to initialize model: {str(e)}")
 
 
 
