@@ -16,4 +16,9 @@ dependencies = [
     "fastapi-cache>=0.1.0",
     "langchain-openai>=1.1.0",
     "langchain-deepseek>=1.0.1",
+    "langchain-core>=1.1.0",
+    "langchainhub>=0.1.21",
+    "langchain-classic>=1.0.0",
+    "prophet>=1.2.1",
+    "rich>=14.2.0",
 ]

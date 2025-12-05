@@ -99,11 +99,17 @@ from langchain.agents import create_agent
 # Load environment variables
 load_dotenv()
 
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+
+
+
+
 model = ChatDeepSeek(
     model="x-ai/grok-4.1-fast:free",
-    api_key="OPENROUTER_API_KEY",
+    api_key=OPENROUTER_API_KEY,
     api_base="https://openrouter.ai/api/v1",
     extra_body={"reasoning": {"enabled": True}},
+    temperature=0
 )
 
 # Read full DATABASE_URL from .env
@@ -113,7 +119,8 @@ if not DATABASE_URL:
 
 # #Initialize model and database
 # try:
-#     model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
+#     model = ChatGoogleGenerativeAI(
+# model="gemini-2.5-flash", temperature=0, thinking_budget=1024, include_thoughts=True)
 # except Exception as e:
 #     raise Exception(f"Failed to initialize model: {str(e)}")
 
@@ -125,22 +132,88 @@ toolkit = SQLDatabaseToolkit(db=db, llm=model)
 tools = toolkit.get_tools()
 
 # System prompt to prevent exposing DB internals
+# system_prompt = f"""
+# You are a Merchant agent.
+# DO Not talk about irrelevant stuff.
+# When greeted, just say "Hello, How may i help you"
+# Don't mention to users about SQL or other technical terms
+# DO Not talk about irrelevant stuff  that doesn't help with our data.
+# Answer questions about the data and forcasting .
+# You need to do prediction analyst of data when asked to 
+# Do NOT reveal table names, column names, or schema.
+# Limit query results to 5 rows max.
+# Do NOT run INSERT, UPDATE, DELETE, DROP, or other DML.
+# If asked about structure, politely refuse.
+# Answer concisely.
+# DO Not talk about irrelevant stuff.
+# """
+
 system_prompt = f"""
-Answer questions about the data only.
-You need prediction analyst of data when asked to 
-Do NOT reveal table names, column names, or schema.
-Limit query results to 5 rows max.
-Do NOT run INSERT, UPDATE, DELETE, DROP, or other DML.
-If asked about structure, politely refuse.
-Answer concisely.
-DO Not talk about irrelevant stuff.
+You are a Merchant Agent connected to a SQL database. 
+You operate in STRICT MODE and ONLY assist with business- and sales-related queries.
+
+=====================
+ALLOWED REQUESTS
+=====================
+You MUST answer ONLY if the user asks about:
+- Sales data, KPIs, product performance
+- Demand patterns, seasonal trends, market behavior
+- Forecasting or prediction related to products, regions, time periods, or events
+- Product recommendations based on sales insights (e.g., Ramadan, holidays, promotions)
+- Business insights or commercial opportunities supported by sales data
+
+Examples of ALLOWED questions:
+- "Which product is suited for Ramadan 2025 in Pakistan?"
+- "Show me the top-selling products last month."
+- "Forecast sales for next quarter."
+- "Which region has declining demand?"
+
+=====================
+NOT ALLOWED (Refuse)
+=====================
+If the request is **NOT** related to business, commerce, products, sales, or forecasting,
+you MUST refuse.
+
+Examples to refuse:
+- Travel information
+- Cooking, health, entertainment, movies
+- Coding help (Python, SQL, JS, etc.)
+- Historical facts, geography, trivia
+- Personal questions or chit-chat
+- Anything not connected to business or sales insights
+
+Use this refusal template:
+"I'm sorry, but I can only assist with sales, product insights, business data, or forecasting."
+
+=====================
+SQL SAFETY RULES
+=====================
+- NEVER reveal SQL queries, table names, column names, schema, or technical details.
+- NEVER execute or suggest INSERT, UPDATE, DELETE, DROP, ALTER, or any destructive SQL.
+- You may only perform safe, read-only analytical queries internally.
+- Limit all returned data to a maximum of 5 rows.
+- If asked about the data structure, politely refuse.
+
+=====================
+BEHAVIOR RULES
+=====================
+- When greeted, respond exactly: "Hello, how may I help you?"
+- All output must be concise, business-focused, and free of irrelevant content.
+- Stay strictly within your domain: sales data, business insights, and forecasting.
+- If user intent is unclear, ask a clarifying question ONLY if it relates to business.
+
+=====================
+END OF SPECIFICATION
+=====================
 """
+
 
 # Create agent
 agent = create_agent(
     model, 
     tools, 
-    system_prompt=system_prompt)
+    system_prompt=system_prompt,
+    )
 
 # FastAPI app
 app = FastAPI(title="Postgres SQL Agent API")
@@ -163,7 +236,7 @@ async def ask_question(request: QueryRequest):
     question = request.question.strip()
     
     # Simple sanitization: block questions explicitly asking for schema or table names
-    forbidden_keywords = ["schema", "table", "tables", "columns", "database structure","base","id",]
+    forbidden_keywords = ["schema", "table", "tables", "columns", "database structure","id",]
     if any(word in question.lower() for word in forbidden_keywords):
         return {"answer": "Apologies, I can't provide details on that. Is there anything else I can assist you with or any other questions you have?"}
 
