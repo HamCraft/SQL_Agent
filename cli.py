@@ -26,7 +26,7 @@ if not DATABASE_URL:
 #Initialize model and database
 try:
     model = ChatGoogleGenerativeAI(
-model="gemini-2.5-flash", temperature=0,include_thoughts=True)
+model="gemini-2.5-pro", temperature=0,include_thoughts=True)
 except Exception as e:
     raise Exception(f"Failed to initialize model: {str(e)}")
 
