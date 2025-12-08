@@ -22,4 +22,6 @@ dependencies = [
     "prophet>=1.2.1",
     "rich>=14.2.0",
     "langchain-experimental>=0.4.0",
+    "langchain-ollama>=1.0.0",
+    "langchain-chroma>=1.0.0",
 ]

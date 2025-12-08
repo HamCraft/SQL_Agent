@@ -7,7 +7,14 @@ from dotenv import load_dotenv
 from langchain_community.utilities import SQLDatabase
 from langchain_experimental.sql import SQLDatabaseChain
 from langchain_core.prompts import PromptTemplate
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_google_genai import ChatGoogleGenerativeAI 
+from langchain_openai import ChatOpenAI
+
+# llm = ChatOpenAI(
+#     model="qwen/qwen3-coder:free",  # Specify a model available on OpenRouter
+#     api_key="OPENROUTER_API_KEY",
+#     base_url="https://openrouter.ai/api/v1",
+# )
 
 load_dotenv()  # load .env
 
@@ -71,7 +78,7 @@ class QueryRequest(BaseModel):
             raise ValueError("query must not be empty")
         return v
 
-def classify_intent(llm: ChatGoogleGenerativeAI, query: str) -> str:
+def classify_intent(llm: ChatOpenAI, query: str) -> str:
     # Build message list following LLM API
     messages = [
         ("system", "You are an assistant that classifies user queries into two categories ONLY:\n\n"

@@ -101,9 +101,6 @@ load_dotenv()
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-
-
-
 model = ChatDeepSeek(
     model="x-ai/grok-4.1-fast:free",
     api_key=OPENROUTER_API_KEY,
@@ -123,9 +120,6 @@ if not DATABASE_URL:
 # model="gemini-2.5-flash", temperature=0, thinking_budget=1024, include_thoughts=True)
 # except Exception as e:
 #     raise Exception(f"Failed to initialize model: {str(e)}")
-
-
-
 
 db = SQLDatabase.from_uri(DATABASE_URL)
 toolkit = SQLDatabaseToolkit(db=db, llm=model)

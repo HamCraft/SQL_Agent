@@ -93,7 +93,7 @@ async def ask_sales_question(request: QueryRequest):
     db = SQLDatabase.from_uri(DATABASE_URL)
     # Initialize the LLM
 
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-pro", temperature=0, google_api_key=GOOGLE_API_KEY)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0, google_api_key=GOOGLE_API_KEY)
     # Prepare the prompt with merchant filter inserted
 
     prompt = BASE_PROMPT.partial(merchant_id=request.merchant_id)
