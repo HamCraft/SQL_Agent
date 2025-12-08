@@ -8,12 +8,18 @@ from langchain_experimental.sql import SQLDatabaseChain
 from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-
 load_dotenv()  # load .env
 
+OPENROUTER_API_KEY= os.getenv("OPENROUTER_API_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
 MERCHANT_ID = int(os.getenv("MERCHANT_ID", 1))
+
+# llm = ChatOpenAI(
+#     model="amazon/nova-2-lite-v1:free",  # Specify a model available on OpenRouter
+#     api_key="OPENROUTER_API_KEY",
+#     base_url="https://openrouter.ai/api/v1",
+# )
 
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL is not set. Please define it in your .env file.")
@@ -87,6 +93,22 @@ def classify_intent(llm: ChatGoogleGenerativeAI, query: str) -> str:
         intent = "other"
     return intent
 
+def classify_forecast(llm: ChatGoogleGenerativeAI, query: str) -> str:
+    # Build message list following LLM API
+    messages = [
+        ("system", "You are an assistant that classifies user queries into two categories ONLY:\n\n"
+            "- forecast_query: The user is asking about forecasting data, future sales, predictions, trends, or anything related to forecasting.\n"
+            "- other: The user is asking about something else.\n\n"
+            "Answer ONLY with one word: forecast_query or other."),
+        ("human", f'User query: "{query}"\nIntent:')
+    ]
+    ai_resp = llm.invoke(messages)
+    # For Gemini-based LLMs, use .text to get the answer string
+    intent = ai_resp.text.strip().lower()
+    if intent not in {"forecast_query", "other"}:
+        intent = "other"
+    return intent
+
 
 @app.post("/ask/")
 async def ask_sales_question(request: QueryRequest):
@@ -102,10 +124,14 @@ async def ask_sales_question(request: QueryRequest):
 
     db_chain = SQLDatabaseChain.from_llm(llm, db, prompt, verbose=True)
 
+    
     intent = classify_intent(llm, request.query)
 
     if intent == "sales_query":
         # Run the chain to answer the query
+        result = db_chain.run(request.query)
+        answer = result
+    elif intent == "forecast_query":
         result = db_chain.run(request.query)
         answer = result
     else:
