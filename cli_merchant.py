@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field, validator
 import os
 from dotenv import load_dotenv
@@ -7,7 +8,6 @@ from langchain_community.utilities import SQLDatabase
 from langchain_experimental.sql import SQLDatabaseChain
 from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
-
 
 load_dotenv()  # load .env
 
@@ -60,7 +60,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 class QueryRequest(BaseModel):
     merchant_id: int = Field(..., alias="merchantId")
     query: str
@@ -86,7 +85,6 @@ def classify_intent(llm: ChatGoogleGenerativeAI, query: str) -> str:
     if intent not in {"sales_query", "other"}:
         intent = "other"
     return intent
-
 
 @app.post("/ask/")
 async def ask_sales_question(request: QueryRequest):
