@@ -42,7 +42,7 @@ Use *exactly* this output template so the system can run the query:
 Question: {{input}}
 SQLQuery: <your SQL>
 SQLResult: <result will be filled in automatically>
-Answer: <clear, concise answer of the sql result in English, obeying Rule #2>
+Answer: <clear, concise answer of the SQLResult in English, give it in human words obeying Rule #2>
 """
 
 BASE_PROMPT = PromptTemplate(
