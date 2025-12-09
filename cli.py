@@ -9,6 +9,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.checkpoint.memory import InMemorySaver
 
 #uv add -r requirements.txt
+#uv run uvicorn cli_merchant:app --reload
 
 # Load environment variables
 load_dotenv()
