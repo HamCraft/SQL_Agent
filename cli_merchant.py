@@ -104,7 +104,7 @@ async def ask_sales_question(request: QueryRequest):
 
     if intent == "sales_query":
         # Run the chain to answer the query
-        result = db_chain.run(request.query)
+        result = db_chain.invoke(request.query)
         answer = result
     else:
         answer = "I’m here to help with sales data questions. Please ask something related to sales."
