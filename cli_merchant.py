@@ -14,6 +14,21 @@ load_dotenv()  # load .env
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
 MERCHANT_ID = int(os.getenv("MERCHANT_ID", 1))
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+
+# llm = ChatOpenAI(
+#     model="x-ai/grok-4.1-fast",
+#     api_key=OPENROUTER_API_KEY,
+#     base_url="https://openrouter.ai/api/v1",
+#     temperature=0
+# )
+
+llm = ChatOpenAI(
+    model="amazon/nova-2-lite-v1:free",
+    api_key=OPENROUTER_API_KEY,
+    base_url="https://openrouter.ai/api/v1",
+    temperature=0
+)
 
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL is not set. Please define it in your .env file.")
@@ -70,7 +85,7 @@ class QueryRequest(BaseModel):
             raise ValueError("query must not be empty")
         return v
 
-def classify_intent(llm: ChatGoogleGenerativeAI, query: str) -> str:
+def classify_intent(llm: ChatOpenAI, query: str) -> str:
     # Build message list following LLM API
     messages = [
         ("system", "You are an assistant that classifies user queries into two categories ONLY:\n\n"
@@ -93,7 +108,8 @@ async def ask_sales_question(request: QueryRequest):
     db = SQLDatabase.from_uri(DATABASE_URL)
     # Initialize the LLM
 
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0, google_api_key=GOOGLE_API_KEY)
+    # llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0, google_api_key=GOOGLE_API_KEY)
+    
     # Prepare the prompt with merchant filter inserted
 
     prompt = BASE_PROMPT.partial(merchant_id=request.merchant_id)
